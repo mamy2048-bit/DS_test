@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>dsc_control</name>
+  <version>0.1.0</version>
+  <description>Velocity-tracking MPC + ESO inner loop for Nav2 on the M2 mobile robot</description>
+  <maintainer email="isr3856@gmail.com">kmj</maintainer>
+  <license>Proprietary</license>
+
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>rcl_interfaces</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>nav2_common</exec_depend>  <!-- launch/nav2_mpc.launch.py (RewrittenYaml) -->
+  <exec_depend>python3-yaml</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-scipy</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>  <!-- sim_robot (odom -> base_link TF) -->
+  <!-- osqp (MPC QP solver) is not a rosdep key: install it with pip, osqp==0.6.7 (README) -->
+
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

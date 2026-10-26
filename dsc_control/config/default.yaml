@@ -1,0 +1,27 @@
+# 저속(도킹 속도) 수동주행 데이터로 맞춘 초기 모델과 보수적인 한계. 책상 시뮬레이션(mpc.launch.py sim:=true)용.
+# Nav2 주행에는 nav.yaml을 쓴다 (이 모델은 지연을 0으로 봐서 Nav2 속도 범위에서는 맞지 않는다).
+model:
+  dt: 0.1
+  v: {a: 0.757, b: 0.242, delay: 0}
+  w: {a: 0.558, b: 0.429, delay: 0}
+
+limits:
+  v_max: 0.3
+  w_max: 0.5
+  wheel_v_max: 0.5   # motor MAX_RPM 4650 corresponds to ~2.37 m/s at the wheel; keep a wide margin
+  dv_max: 0.02       # per 0.1 s step -> 0.2 m/s^2
+  dw_max: 0.1        # per 0.1 s step -> 1.0 rad/s^2
+  track_width: 0.531
+
+mpc:
+  horizon: 20
+  q: [100.0, 10.0]
+  r: [1.0, 1.0]
+  s: [10.0, 1.0]
+
+observer:
+  # ESO bandwidth w_o [rad/s] per axis (v, w): error poles at exp(-w_o*dt).
+  # Plant v time constant is ~0.36 s (~2.8 rad/s); 5 rad/s tracks a step disturbance in ~1 s.
+  bandwidth: [5.0, 5.0]
+
+max_failures: 3

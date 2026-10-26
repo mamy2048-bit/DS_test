@@ -1,0 +1,39 @@
+# [인수인계] Nav2(MPPI) 주행용 MPC/ESO 설정. nav2_mpc.launch.py의 기본 설정 파일이다.
+#   다시 조정할 때 순서: model(재식별, 필수) -> mpc.s(명령 부드러움) -> observer.bandwidth / max_correction.
+#   limits는 DS_navigation params.yaml(MPPI, velocity_smoother)과 맞춰야 한다. 그쪽을 바꾸면 여기도 같이 바꿀 것.
+# MPC + ESO as the inner velocity loop under Nav2 (MPPI -> smoother -> collision_monitor -> /cmd_vel_ref).
+# Limits follow DS_navigation params.yaml so the MPC never clips what MPPI asked for:
+#   MPPI vx_max 0.5, vx_min -0.35, wz_max 1.0; velocity_smoother max_accel [2.5, 3.2] (per 0.1 s: 0.25, 0.32)
+
+# 로봇 응답 모델 (축별 y[k+1] = a*y[k] + b*u[k-delay], dt 0.1 s). Nav2 주행 bag의 /cmd_vel -> /odom 에서
+# python3 -m analysis.identify 로 식별한 값이다. v: 시정수 약 0.28 s, w: 약 0.58 s, 정상 이득은 둘 다 약 1.
+# delay 1 = m2 드라이버가 받은 /cmd_vel을 다음 100 ms 틱에 적용한다.
+model:
+  dt: 0.1
+  v: {a: 0.70, b: 0.31, delay: 1}
+  w: {a: 0.842, b: 0.156, delay: 1}
+
+limits:
+  v_max: 0.5         # MPPI vx_max. nav2_mpc.launch.py의 vx_max 인자(노드 파라미터 v_max)가 덮어쓴다
+  v_min: -0.35       # MPPI vx_min. collision_monitor is upstream of the MPC, so never reverse faster than MPPI may
+  w_max: 1.0         # MPPI wz_max
+  wheel_v_max: 0.8   # 0.5 + 0.531/2 * 1.0 = 0.77; motor MAX_RPM corresponds to ~2.37 m/s
+  dv_max: 0.25       # per 0.1 s step = velocity_smoother max_accel 2.5 m/s^2
+  dw_max: 0.32       # per 0.1 s step = velocity_smoother max_accel 3.2 rad/s^2
+  track_width: 0.531
+
+mpc:
+  horizon: 20        # 2 s 앞까지 예측
+  q: [100.0, 10.0]   # (v, w) 속도 추종 오차 가중치
+  r: [1.0, 1.0]      # 정상상태 입력 u_bar에서 벗어나는 가중치
+  s: [30.0, 3.0]     # 명령 변화량 가중치. 클수록 명령이 부드럽고 반응이 느리다
+
+observer:
+  # ESO 대역폭 w_o [rad/s] per axis (v, w): error poles at exp(-w_o*dt). 크면 빨리 따라가지만 진동·잡음도 외란으로 본다.
+  bandwidth: [2.0, 2.0]
+  # Cap on the ESO correction used for control (|d_hat/b|, v [m/s], w [rad/s]). The observer keeps its full
+  # estimate; only the part fed to the target and the MPC prediction is clipped, so a transient model mismatch
+  # (e.g. right after a goal switch) cannot drive a large opposite command.
+  max_correction: [0.2, 0.6]
+
+max_failures: 3
