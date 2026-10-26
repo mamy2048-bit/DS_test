@@ -1,5 +1,5 @@
-# 저속(도킹 속도) 수동주행 데이터로 맞춘 초기 모델과 보수적인 한계. 책상 시뮬레이션(mpc.launch.py sim:=true)용.
-# Nav2 주행에는 nav.yaml을 쓴다 (이 모델은 지연을 0으로 봐서 Nav2 속도 범위에서는 맞지 않는다).
+# 이 파일의 모델(delay 0)은 저속 수동주행 데이터로 맞춘 초기값이다. 책상 시뮬레이션(mpc.launch.py sim:=true)용.
+# Nav2 주행에는 delay 1로 다시 식별한 nav.yaml을 쓴다 (nav2_mpc.launch.py 기본값).
 model:
   dt: 0.1
   v: {a: 0.757, b: 0.242, delay: 0}
